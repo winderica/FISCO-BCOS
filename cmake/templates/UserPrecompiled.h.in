@@ -38,4 +38,5 @@
         Address(dev::precompiled::GROUP_SIG_ADDRESS), std::make_shared<dev::precompiled::GroupSigPrecompiled>());
     context->setAddress2Precompiled(
         Address(dev::precompiled::RING_SIG_ADDRESS), std::make_shared<dev::precompiled::RingSigPrecompiled>());
+    context->setAddress2Precompiled(Address(0x5007), std::make_shared<dev::precompiled::ProxyReEncryptionPrecompiled>());
 }
