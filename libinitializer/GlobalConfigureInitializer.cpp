@@ -143,65 +143,6 @@ void dev::initializer::initGlobalConfig(const boost::property_tree::ptree& _pt)
             ForbidNegativeValue() << errinfo_comment("Please set chain.id to positive!"));
     }
     g_BCOSConfig.setChainId(chainId);
-    if (g_BCOSConfig.version() >= V2_5_0)
-    {
-        bool useSMCrypto = _pt.get<bool>("chain.sm_crypto", false);
-        g_BCOSConfig.setUseSMCrypto(useSMCrypto);
-        if (useSMCrypto)
-        {
-            string crypto_provider = _pt.get<string>("network_security.crypto_provider", "ssm");
-
-            if (dev::stringCmpIgnoreCase(crypto_provider, "hsm") == 0)
-            {
-#ifdef FISCO_SDF
-                INITIALIZER_LOG(INFO) << "Use hardware secure module "<<endl;
-                crypto::initHsmSMCrypto();
-#else
-                INITIALIZER_LOG(ERROR)
-                    << LOG_BADGE("SecureInitializerGM")
-                    << LOG_DESC(
-                           "You are trying to use hardware secure module, while your "
-                           "fisco-bcos binary is not support. Please recompile your "
-                           "FISCO-BCOS code with option -DUSE_HSM_SDF=on");
-                throw std::invalid_argument(
-                    "You are trying to use hardware secure module, while your fisco-bcos binary is "
-                    "not "
-                    "support. Please recompile your FISCO-BCOS code with option -DUSE_HSM_SDF=on");
-#endif
-            }
-            else
-            {
-                crypto::initSMCrypto();
-            }
-        }
-    }
-    else
-    {
-        boost::filesystem::path gmNodeKeyPath = "conf/gmnode.key";
-        if (boost::filesystem::exists(gmNodeKeyPath))
-        {
-            g_BCOSConfig.setUseSMCrypto(true);
-            string crypto_provider = _pt.get<string>("network_security.crypto_provider", "ssm");
-            if (dev::stringCmpIgnoreCase(crypto_provider, "hsm") == 0)
-            {
-#ifdef FISCO_SDF
-                INITIALIZER_LOG(INFO) << "Use hardware secure module "<<endl;
-                crypto::initHsmSMCrypto();
-#else
-                INITIALIZER_LOG(INFO) << "Use software secure module "<<endl;
-                crypto::initSMCrypto();
-#endif
-            }
-            else
-            {
-                crypto::initSMCrypto();
-            }
-        }
-        else
-        {
-            g_BCOSConfig.setUseSMCrypto(false);
-        }
-    }
 
     if (g_BCOSConfig.diskEncryption.enable)
     {
@@ -223,27 +164,18 @@ void dev::initializer::initGlobalConfig(const boost::property_tree::ptree& _pt)
     }
     bool enableStat = _pt.get<bool>("log.enable_statistic", false);
     g_BCOSConfig.setEnableStat(enableStat);
-#ifdef FISCO_SDF
-    g_BCOSConfig.binaryInfo.version += "-hsm";
-#endif
-    g_BCOSConfig.binaryInfo.version += g_BCOSConfig.SMCrypto() ? " gm" : "";
 
     INITIALIZER_LOG(INFO) << LOG_BADGE("initGlobalConfig")
                           << LOG_KV("enableCompress", g_BCOSConfig.compressEnabled())
                           << LOG_KV("compatibilityVersion", version)
                           << LOG_KV("versionNumber", g_BCOSConfig.version())
                           << LOG_KV("enableStat", g_BCOSConfig.enableStat())
-                          << LOG_KV("chainId", g_BCOSConfig.chainId())
-                          << LOG_KV("useSMCrypto", g_BCOSConfig.SMCrypto());
+                          << LOG_KV("chainId", g_BCOSConfig.chainId());
 }
 
 void dev::version()
 {
-    std::cout << "FISCO-BCOS Version : " << FISCO_BCOS_PROJECT_VERSION
-#ifdef FISCO_SDF
-              << "-hsm"
-#endif
-              << (g_BCOSConfig.SMCrypto() ? " gm" : "") << std::endl;
+    std::cout << "FISCO-BCOS Version : " << FISCO_BCOS_PROJECT_VERSION;
     std::cout << "Build Time         : " << FISCO_BCOS_BUILD_TIME << std::endl;
     std::cout << "Build Type         : " << FISCO_BCOS_BUILD_PLATFORM << "/"
               << FISCO_BCOS_BUILD_TYPE << std::endl;

@@ -29,9 +29,7 @@ namespace precompiled
 #if 0
 contract Crypto
 {
-    function sm3(bytes data) public view returns(bytes32);
     function keccak256Hash(bytes data) public view returns(bytes32);
-    function sm2Verify(bytes32 message, bytes publicKey, bytes32 r, bytes32 s) public view returns(bool, address);
     function curve25519VRFVerify(string input, string vrfPublicKey, string vrfProof) public view returns(bool,uint256);
 }
 #endif
@@ -46,7 +44,6 @@ public:
         Address const& _sender = Address()) override;
 
 private:
-    void sm2Verify(bytesConstRef _paramData, PrecompiledExecResult::Ptr _callResult);
     void curve25519VRFVerify(bytesConstRef _paramData, PrecompiledExecResult::Ptr _callResult);
 };
 }  // namespace precompiled

@@ -51,10 +51,7 @@ enum InterfaceOpcode : int64_t
     Select = 0x0f,
     Insert = 0x10,
     Update = 0x11,
-    Remove = 0x12,
-    PaillierAdd = 0x13,
-    GroupSigVerify = 0x14,
-    RingSigVerify = 0x15
+    Remove = 0x12
 };
 
 struct GasMetrics
@@ -94,9 +91,7 @@ struct GasMetrics
             {InterfaceOpcode::GetString, VeryLow}, {InterfaceOpcode::CreateTable, CreateGas},
             {InterfaceOpcode::OpenTable, LoadGas}, {InterfaceOpcode::Select, LoadGas},
             {InterfaceOpcode::Insert, StoreGas}, {InterfaceOpcode::Update, StoreGas},
-            {InterfaceOpcode::Remove, RemoveGas}, {InterfaceOpcode::PaillierAdd, VerifyGas},
-            {InterfaceOpcode::GroupSigVerify, VerifyGas},
-            {InterfaceOpcode::RingSigVerify, VerifyGas}};
+            {InterfaceOpcode::Remove, RemoveGas}};
     }
 };
 

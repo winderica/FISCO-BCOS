@@ -21,8 +21,6 @@
 #include "CryptoPrecompiled.h"
 #include "ffi_vrf.h"
 #include "libdevcrypto/Hash.h"
-#include "libdevcrypto/SM2Signature.h"
-#include "libdevcrypto/SM3Hash.h"
 #include "libethcore/ABI.h"
 
 using namespace dev;
@@ -31,13 +29,8 @@ using namespace dev::crypto;
 using namespace dev::precompiled;
 using namespace dev::blockverifier;
 
-// precompiled interfaces related to hash calculation
-const char* const CRYPTO_METHOD_SM3_STR = "sm3(bytes)";
 // Note: the interface here can't be keccak256k1 for naming conflict
 const char* const CRYPTO_METHOD_KECCAK256_STR = "keccak256Hash(bytes)";
-// precompiled interfaces related to verify
-// sm2 verify: (message, v, r, s)
-const char* const CRYPTO_METHOD_SM2_VERIFY_STR = "sm2Verify(bytes32,bytes,bytes32,bytes32)";
 // precompiled interfaces related to VRF verify
 // the params are (vrfInput, vrfPublicKey, vrfProof)
 const char* const CRYPTO_METHOD_CURVE25519_VRF_VERIFY_STR =
@@ -45,9 +38,7 @@ const char* const CRYPTO_METHOD_CURVE25519_VRF_VERIFY_STR =
 
 CryptoPrecompiled::CryptoPrecompiled()
 {
-    name2Selector[CRYPTO_METHOD_SM3_STR] = getFuncSelector(CRYPTO_METHOD_SM3_STR);
     name2Selector[CRYPTO_METHOD_KECCAK256_STR] = getFuncSelector(CRYPTO_METHOD_KECCAK256_STR);
-    name2Selector[CRYPTO_METHOD_SM2_VERIFY_STR] = getFuncSelector(CRYPTO_METHOD_SM2_VERIFY_STR);
     name2Selector[CRYPTO_METHOD_CURVE25519_VRF_VERIFY_STR] =
         getFuncSelector(CRYPTO_METHOD_CURVE25519_VRF_VERIFY_STR);
 }
@@ -62,17 +53,6 @@ PrecompiledExecResult::Ptr CryptoPrecompiled::call(
     callResult->gasPricer()->setMemUsed(_param.size());
     do
     {
-        if (funcSelector == name2Selector[CRYPTO_METHOD_SM3_STR])
-        {
-            bytes inputData;
-            abi.abiOut(paramData, inputData);
-            auto sm3Hash = sm3(inputData);
-            PRECOMPILED_LOG(TRACE)
-                << LOG_DESC("CryptoPrecompiled: sm3") << LOG_KV("input", toHex(inputData))
-                << LOG_KV("result", toHex(sm3Hash));
-            callResult->setExecResult(abi.abiIn("", dev::eth::toString32(sm3Hash)));
-            break;
-        }
         if (funcSelector == name2Selector[CRYPTO_METHOD_KECCAK256_STR])
         {
             bytes inputData;
@@ -84,11 +64,6 @@ PrecompiledExecResult::Ptr CryptoPrecompiled::call(
             callResult->setExecResult(abi.abiIn("", dev::eth::toString32(keccak256Hash)));
             break;
         }
-        if (funcSelector == name2Selector[CRYPTO_METHOD_SM2_VERIFY_STR])
-        {
-            sm2Verify(paramData, callResult);
-            break;
-        }
         if (funcSelector == name2Selector[CRYPTO_METHOD_CURVE25519_VRF_VERIFY_STR])
         {
             curve25519VRFVerify(paramData, callResult);
@@ -98,51 +73,6 @@ PrecompiledExecResult::Ptr CryptoPrecompiled::call(
         callResult->setExecResult(abi.abiIn("", u256((uint32_t)CODE_UNKNOW_FUNCTION_CALL)));
     } while (0);
     return callResult;
-}
-
-void CryptoPrecompiled::sm2Verify(bytesConstRef _paramData, PrecompiledExecResult::Ptr _callResult)
-{
-    ContractABI abi;
-    try
-    {
-        string32 message;
-        bytes v;
-        string32 r;
-        string32 s;
-        abi.abiOut(_paramData, message, v, r, s);
-        std::shared_ptr<SM2Signature> sm2Signature =
-            std::make_shared<SM2Signature>(fromString32(r), fromString32(s), h512(v));
-        Address account;
-        bool verifySucc = true;
-        if (!sm2Signature->isValid())
-        {
-            PRECOMPILED_LOG(DEBUG)
-                << LOG_DESC("CryptoPrecompiled: sm2Verify failed for invalid signature");
-            _callResult->setExecResult(abi.abiIn("", false, account));
-            return;
-        }
-        auto publicKey = sm2Recover(sm2Signature, fromString32(message));
-        if (publicKey == dev::h512())
-        {
-            PRECOMPILED_LOG(DEBUG)
-                << LOG_DESC("CryptoPrecompiled: sm2Verify failed for recover public key failed");
-            _callResult->setExecResult(abi.abiIn("", false, account));
-            return;
-        }
-        account = right160(sm3(publicKey));
-        PRECOMPILED_LOG(TRACE) << LOG_DESC("CryptoPrecompiled: sm2Verify")
-                               << LOG_KV("verifySucc", verifySucc)
-                               << LOG_KV("publicKey", toHex(publicKey))
-                               << LOG_KV("account", account);
-        _callResult->setExecResult(abi.abiIn("", verifySucc, account));
-    }
-    catch (std::exception const& e)
-    {
-        PRECOMPILED_LOG(WARNING) << LOG_DESC("CryptoPrecompiled: sm2Verify exception")
-                                 << LOG_KV("e", boost::diagnostic_information(e));
-        Address emptyAccount;
-        _callResult->setExecResult(abi.abiIn("", false, emptyAccount));
-    }
 }
 
 void CryptoPrecompiled::curve25519VRFVerify(

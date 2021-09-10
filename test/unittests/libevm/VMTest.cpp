@@ -206,16 +206,8 @@ public:
         Address addressWithEmptyCode{KeyPair::create().address()};
         state->addBalance(addressWithEmptyCode, 1 * ether);
         auto ret = callVMExec(addressWithEmptyCode.ref());
-        if (g_BCOSConfig.SMCrypto())
-        {
-            BOOST_REQUIRE_EQUAL(toHex(ret.toBytes()),
-                "1ab21d8355cfa17f8e61194831e81a8f22bec8c728fefb747ed035eb5082aa2b");
-        }
-        else
-        {
-            BOOST_REQUIRE_EQUAL(toHex(ret.toBytes()),
-                "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
-        }
+        BOOST_REQUIRE_EQUAL(toHex(ret.toBytes()),
+            "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
     }
 
     void testExtCodeHashOfNonExistentAccount()
@@ -243,12 +235,6 @@ public:
 
         auto ret = callVMExec(addressPrecompile.ref());
 
-        if (g_BCOSConfig.SMCrypto())
-        {
-            BOOST_REQUIRE_EQUAL(toHex(ret.toBytes()),
-                "1ab21d8355cfa17f8e61194831e81a8f22bec8c728fefb747ed035eb5082aa2b");
-        }
-        else
         {
             BOOST_REQUIRE_EQUAL(toHex(ret.toBytes()),
                 "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");

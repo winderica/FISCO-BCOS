@@ -535,18 +535,8 @@ int main(int argc, const char* argv[])
         auto& p = params["encrypt"].as<vector<string>>();
         cout << "encrypt " << p << " || params num : " << p.size() << endl;
         string dataKey = p[0];
-        if (p.size() > 1)
-        {  // sm crypto
-            g_BCOSConfig.setUseSMCrypto(true);
-            crypto::initSMCrypto();
-            encryptKey = sm3(dataKey).asBytes();
-            encryptKey = encryptKey + encryptKey + encryptKey + encryptKey;
-        }
-        else
-        {  // keccak256
-            g_BCOSConfig.setUseSMCrypto(false);
-            encryptKey = keccak256(dataKey).asBytes();
-        }
+        // keccak256
+        encryptKey = keccak256(dataKey).asBytes();
     }
 
     auto rocksdbStorage = createRocksDBStorage(storagePath, encryptKey, false, false);

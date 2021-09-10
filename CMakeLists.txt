@@ -55,18 +55,9 @@ include(ProjectJsonCpp)
 include(ProjectJsonRpcCpp)
 include(ProjectBoost)
 include(ProjectLibzdb)
-include(ProjectTCMalloc)
-include(ProjectLibFF)
-include(ProjectPaillier)
-include(ProjectGroupSig)
 include(ProjectEVMC)
 include(ProjectVRF)
 include(ProjectEVMONE)
-include(ProjectTASSL)
-
-if(USE_HSM_SDF)
-  include(ProjectSDF)
-endif()
 
 include_directories("${CMAKE_SOURCE_DIR}")
 

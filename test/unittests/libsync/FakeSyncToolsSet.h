@@ -144,43 +144,6 @@ public:
     TransactionPtr createTransaction(int64_t _currentBlockNumber)
     {
         bytes c_txBytes;
-        if (g_BCOSConfig.SMCrypto())
-        {
-            c_txBytes = fromHex(
-                "f901309f65f0d06e39dc3c08e32ac10a5070858962bc6c0f5760baca823f2d5582d14485174876e7ff"
-                "8609"
-                "184e729fff8204a294d6f1a71052366dbae2f7ab2d5d5845e77965cf0d80b86448f85bce0000000000"
-                "0000"
-                "0000000000000000000000000000000000000000000000001bf5bd8a9e7ba8b936ea704292ff4aaa57"
-                "97bf"
-                "671fdc8526dcd159f23c1f5a05f44e9fa862834dc7cb4541558f2b4961dc39eaaf0af7f7395028658d"
-                "0e01"
-                "b86a37b840c7ca78e7ab80ee4be6d3936ba8e899d8fe12c12114502956ebe8c8629d36d88481dec997"
-                "3574"
-                "2ea523c88cf3becba1cc4375bc9e225143fe1e8e43abc8a7c493a0ba3ce8383b7c91528bede9cf890b"
-                "4b1e"
-                "9b99c1d8e56d6f8292c827470a606827a0ed511490a1666791b2bd7fc4f499eb5ff18fb97ba68ff9ae"
-                "e206"
-                "8fd63b88e817");
-            if (g_BCOSConfig.version() >= RC2_VERSION)
-            {
-                c_txBytes = fromHex(
-                    "f90114a003eebc46c9c0e3b84799097c5a6ccd6657a9295c11270407707366d0750fcd598411e1"
-                    "a300"
-                    "84b2d05e008201f594bab78cea98af2320ad4ee81bba8a7473e0c8c48d80a48fff0fc400000000"
-                    "0000"
-                    "00000000000000000000000000000000000000000000000000040101a48fff0fc4000000000000"
-                    "0000"
-                    "000000000000000000000000000000000000000000000004b8408234c544a9f3ce3b401a92cc71"
-                    "7560"
-                    "2ce2a1e29b1ec135381c7d2a9e8f78f3edc9c06ee55252857c9a4560cb39e9d70d40f4331cace4"
-                    "d2b3"
-                    "121b967fa7a829f0a00f16d87c5065ad5c3b110ef0b97fe9a67b62443cb8ddde60d4e001a64429"
-                    "dc6e"
-                    "a03d2569e0449e9a900c236541afb9d8a8d5e1a36844439c7076f6e75ed624256f");
-            }
-        }
-        else
         {
             c_txBytes = fromHex(
                 "f8ef9f65f0d06e39dc3c08e32ac10a5070858962bc"

@@ -88,9 +88,6 @@ public:
 
     bool const& enableStat() const { return m_enableStat; }
 
-    void setUseSMCrypto(bool _useSMCrypto) { m_useSMCrypto = _useSMCrypto; }
-    bool SMCrypto() const { return m_useSMCrypto; }
-
     struct DiskEncryption
     {
         bool enable = false;
@@ -137,7 +134,6 @@ private:
     std::string m_confDir;
     std::string m_dataDir;
     bool m_enableStat;
-    bool m_useSMCrypto;
 };
 
 #define g_BCOSConfig GlobalConfigure::instance()

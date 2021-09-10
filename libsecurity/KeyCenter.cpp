@@ -238,12 +238,6 @@ void KeyCenter::setIpPort(const std::string& _ip, int _port)
 dev::bytes KeyCenter::uniformDataKey(const dev::bytes& _readableDataKey)
 {
     bytes oneTurn = crypto::Hash(ref(_readableDataKey)).asBytes();
-    if (g_BCOSConfig.SMCrypto())
-    {
-        return oneTurn + oneTurn + oneTurn + oneTurn;
-    }
-    else
-    {
-        return oneTurn;
-    }
+
+    return oneTurn;
 }

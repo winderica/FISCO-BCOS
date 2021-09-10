@@ -187,12 +187,6 @@ namespace dev
 {
 namespace executive
 {
-evmc_bytes32 sm3Hash(const uint8_t* data, size_t size)
-{
-    evmc_bytes32 hash;
-    sm3(data, size, hash.bytes);
-    return hash;
-}
 
 evmc_gas_metrics ethMetrics{32000, 20000, 5000, 200, 9000, 2300, 25000};
 evmc_gas_metrics freeStorageGasMetrics{16000, 1200, 1200, 1200, 0, 5, 5};
@@ -219,10 +213,6 @@ EVMHostContext::EVMHostContext(std::shared_ptr<StateFace> _s,
 {
     interface = getHostInterface();
     sm3_hash_fn = nullptr;
-    if (g_BCOSConfig.SMCrypto())
-    {
-        sm3_hash_fn = sm3Hash;
-    }
     version = g_BCOSConfig.version();
     if (m_freeStorage)
     {

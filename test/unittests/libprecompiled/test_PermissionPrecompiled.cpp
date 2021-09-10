@@ -45,12 +45,10 @@ namespace test_AuthorityPrecompiled
 {
 struct AuthorityPrecompiledFixture
 {
-    AuthorityPrecompiledFixture(bool useSMCrypto = false)
+    AuthorityPrecompiledFixture()
     {
-        m_useSMCrypto = useSMCrypto;
         blockInfo.hash = h256(0);
         blockInfo.number = 0;
-        if (!useSMCrypto)
         {
             m_version = g_BCOSConfig.version();
             m_supportedVersion = g_BCOSConfig.supportedVersion();
@@ -78,7 +76,6 @@ struct AuthorityPrecompiledFixture
 
     ~AuthorityPrecompiledFixture()
     {
-        if (!m_useSMCrypto)
         {
             g_BCOSConfig.setSupportedVersion(m_supportedVersion, m_version);
         }
@@ -92,7 +89,6 @@ struct AuthorityPrecompiledFixture
     BlockInfo blockInfo;
     dev::VERSION m_version;
     std::string m_supportedVersion;
-    bool m_useSMCrypto;
 };
 
 struct SM_AuthorityPrecompiledFixture : public SM_CryptoTestFixture,

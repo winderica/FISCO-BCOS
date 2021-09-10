@@ -46,12 +46,6 @@ struct HostFixture
     {
         boost::property_tree::ptree pt;
         pt.put("secure.data_path", getTestPath().string() + "/fisco-bcos-data/");
-        if (g_BCOSConfig.SMCrypto())
-        {
-            m_sslContext =
-                std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
-        }
-        else
         {
             auto secureInitializer = std::make_shared<dev::initializer::SecureInitializer>();
             secureInitializer->initConfig(pt);

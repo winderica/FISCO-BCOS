@@ -1,5 +1,11 @@
 include(ExternalProject)
 
+find_library(GMP_LIBRARIES gmp)
+find_path(GMP_INCLUDE_DIR gmp.h)
+add_library(Gmp UNKNOWN IMPORTED)
+set_property(TARGET Gmp PROPERTY IMPORTED_LOCATION ${GMP_LIBRARIES})
+set_property(TARGET Gmp PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${GMP_INCLUDE_DIR})
+
 ExternalProject_Add(mcl
     PREFIX ${CMAKE_SOURCE_DIR}/deps
     DOWNLOAD_NAME mcl-1.52.tar.gz
@@ -27,5 +33,6 @@ file(MAKE_DIRECTORY ${MCL_INCLUDE_DIR})  # Must exist.
 set_property(TARGET MCL PROPERTY IMPORTED_LOCATION ${MCL_LIBRARY})
 set_property(TARGET MCL PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${MCL_INCLUDE_DIR})
 add_dependencies(MCL mcl)
+
 unset(INSTALL_DIR)
 

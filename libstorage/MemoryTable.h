@@ -243,16 +243,9 @@ public:
             return h256();
         }
         bytesConstRef bR(data.data(), data.size());
-        if (g_BCOSConfig.SMCrypto())
-        {
-            auto hash = dev::sm3(bR);
-            return hash;
-        }
-        else
-        {
-            auto hash = dev::sha256(bR);
-            return hash;
-        }
+
+        auto hash = dev::sha256(bR);
+        return hash;
     }
     virtual void clear() override { m_cache.clear(); }
     virtual bool empty() override

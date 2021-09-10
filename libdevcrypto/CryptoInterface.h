@@ -23,7 +23,6 @@
 
 #include "Common.h"
 #include "Hash.h"
-#include "SM3Hash.h"
 #include "Signature.h"
 #include "libdevcore/FixedHash.h"
 #include <libconfig/GlobalConfigure.h>
@@ -58,10 +57,6 @@ extern std::function<std::shared_ptr<crypto::Signature>(RLP const& _rlp, size_t 
 extern std::function<std::shared_ptr<crypto::Signature>(std::vector<unsigned char>)>
     SignatureFromBytes;
 
-void initSMCrypto();
-#if FISCO_SDF
-void initHsmSMCrypto();
-#endif
 void initCrypto();
 
 size_t signatureLength();
@@ -71,20 +66,12 @@ size_t signatureLength();
 template <unsigned N>
 inline SecureFixedHash<32> Hash(SecureFixedHash<N>&& _data)
 {
-    if (g_BCOSConfig.SMCrypto())
-    {
-        return sm3Secure(_data);
-    }
     return keccak256Secure(_data);
 }
 
 template <typename T>
 inline h256 Hash(T&& _data)
 {
-    if (g_BCOSConfig.SMCrypto())
-    {
-        return sm3(_data);
-    }
     return keccak256(_data);
 }
 

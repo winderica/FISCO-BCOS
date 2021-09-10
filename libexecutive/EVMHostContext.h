@@ -39,7 +39,6 @@ namespace dev
 {
 namespace executive
 {
-evmc_bytes32 sm3Hash(const uint8_t* data, size_t size);
 /// Externality interface for the Virtual Machine providing access to world state.
 class EVMHostContext : public evmc_host_context
 {

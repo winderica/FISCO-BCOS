@@ -27,7 +27,6 @@
 #include <libconfig/GlobalConfigure.h>
 #include <libdevcore/CommonData.h>
 #include <libdevcrypto/ECDSASignature.h>
-#include <libdevcrypto/SM2Signature.h>
 #include <libethcore/Common.h>
 #include <libethcore/CommonJS.h>
 #include <libethcore/Transaction.h>
@@ -1971,19 +1970,10 @@ void Rpc::parseTransactionIntoResponse(Json::Value& _response, dev::h256 const& 
     Json::Value signatureResponse;
     signatureResponse["r"] = toJS(_tx->vrs()->r);
     signatureResponse["s"] = toJS(_tx->vrs()->s);
-    // the sm signature
-    if (g_BCOSConfig.SMCrypto())
-    {
-        std::shared_ptr<dev::crypto::SM2Signature> sm2Signature =
-            std::dynamic_pointer_cast<dev::crypto::SM2Signature>(_tx->vrs());
-        signatureResponse["v"] = toJS(sm2Signature->v);
-    }
-    else
-    {
-        std::shared_ptr<dev::crypto::ECDSASignature> ecdsaSignature =
-            std::dynamic_pointer_cast<dev::crypto::ECDSASignature>(_tx->vrs());
-        signatureResponse["v"] = toJS(ecdsaSignature->v);
-    }
+
+    std::shared_ptr<dev::crypto::ECDSASignature> ecdsaSignature =
+        std::dynamic_pointer_cast<dev::crypto::ECDSASignature>(_tx->vrs());
+    signatureResponse["v"] = toJS(ecdsaSignature->v);
     signatureResponse["signature"] = toJS(_tx->vrs()->asBytes());
     _response["signature"] = signatureResponse;
 }

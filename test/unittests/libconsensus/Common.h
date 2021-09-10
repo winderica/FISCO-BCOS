@@ -26,7 +26,6 @@
 #include <libconsensus/Common.h>
 #include <libconsensus/pbft/Common.h>
 #include <libdevcrypto/Common.h>
-#include <libdevcrypto/SM2Signature.h>
 #include <boost/test/unit_test.hpp>
 
 namespace dev
@@ -46,30 +45,12 @@ void checkPBFTMsg(T const& msg, KeyPair const _keyPair = KeyPair::create(),
     BOOST_CHECK(msg.block_hash == _blockHash);
     if (!msg.sig.empty())
     {
-        if (g_BCOSConfig.SMCrypto())
-        {
-            bool result =
-                crypto::Verify(_keyPair.pub(), sm2SignatureFromBytes(msg.sig), msg.block_hash);
-            BOOST_CHECK_EQUAL(result, true);
-        }
-        else
-        {
-            BOOST_CHECK_EQUAL(toHex(msg.sig), toHex(msg.signHash(msg.block_hash, _keyPair)));
-        }
+        BOOST_CHECK_EQUAL(toHex(msg.sig), toHex(msg.signHash(msg.block_hash, _keyPair)));
     }
     if (!msg.sig2.empty())
     {
-        if (g_BCOSConfig.SMCrypto())
-        {
-            bool result1 = crypto::Verify(
-                _keyPair.pub(), sm2SignatureFromBytes(msg.sig2), msg.fieldsWithoutBlock());
-            BOOST_CHECK_EQUAL(result1, true);
-        }
-        else
-        {
-            BOOST_CHECK_EQUAL(
-                toHex(msg.sig2), toHex(msg.signHash(msg.fieldsWithoutBlock(), _keyPair)));
-        }
+        BOOST_CHECK_EQUAL(
+            toHex(msg.sig2), toHex(msg.signHash(msg.fieldsWithoutBlock(), _keyPair)));
     }
 }
 

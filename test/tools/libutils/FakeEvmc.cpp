@@ -235,14 +235,7 @@ evmc_result FakeEvmc::execute(EVMSchedule const& schedule, bytes code, bytes dat
     assert(flags != EVMC_STATIC || kind == EVMC_CALL);  // STATIC implies a CALL.
     evmc_message msg = {kind, flags, depth, gas, toEvmC(destination), toEvmC(caller), data.data(),
         data.size(), toEvmC(value), toEvmC(0x0_cppui256)};
-    if (g_BCOSConfig.SMCrypto())
-    {
-        m_context->sm3_hash_fn = dev::executive::sm3Hash;
-    }
-    else
-    {
-        m_context->sm3_hash_fn = nullptr;
-    }
+    m_context->sm3_hash_fn = nullptr;
     evmc_result result = m_instance->execute(
         m_instance, m_context->interface, m_context.get(), mode, &msg, code.data(), code.size());
 
