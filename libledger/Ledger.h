@@ -211,7 +211,6 @@ protected:
         dev::PROTOCOL_ID const& _protocolId);
     dev::eth::BlockFactory::Ptr createBlockFactory();
     void initPBFTEngine(dev::consensus::Sealer::Ptr _sealer);
-    void initrPBFTEngine(dev::consensus::Sealer::Ptr _sealer);
 
 private:
     void setSDKAllowList(dev::h512s const& _sdkList);
@@ -219,20 +218,6 @@ private:
     std::shared_ptr<dev::consensus::Sealer> createPBFTSealer();
     /// create RaftConsensus
     std::shared_ptr<dev::consensus::Sealer> createRaftSealer();
-
-    bool inline normalrPBFTEnabled()
-    {
-        return (dev::stringCmpIgnoreCase(
-                    m_param->mutableConsensusParam().consensusType, RPBFT_CONSENSUS_TYPE) == 0) &&
-               (g_BCOSConfig.version() < V2_6_0);
-    }
-
-    bool inline vrfBasedrPBFTEnabled()
-    {
-        return (dev::stringCmpIgnoreCase(
-                    m_param->mutableConsensusParam().consensusType, RPBFT_CONSENSUS_TYPE) == 0) &&
-               (g_BCOSConfig.version() >= V2_6_0);
-    }
 
 protected:
     std::shared_ptr<LedgerParamInterface> m_param = nullptr;

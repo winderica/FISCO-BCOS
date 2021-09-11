@@ -30,7 +30,6 @@ namespace precompiled
 contract Crypto
 {
     function keccak256Hash(bytes data) public view returns(bytes32);
-    function curve25519VRFVerify(string input, string vrfPublicKey, string vrfProof) public view returns(bool,uint256);
 }
 #endif
 class CryptoPrecompiled : public Precompiled
@@ -42,9 +41,6 @@ public:
     PrecompiledExecResult::Ptr call(std::shared_ptr<dev::blockverifier::ExecutiveContext> _context,
         bytesConstRef _param, Address const& _origin = Address(),
         Address const& _sender = Address()) override;
-
-private:
-    void curve25519VRFVerify(bytesConstRef _paramData, PrecompiledExecResult::Ptr _callResult);
 };
 }  // namespace precompiled
 }  // namespace dev

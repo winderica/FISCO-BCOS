@@ -91,7 +91,6 @@ public:
     std::string getBlockNumber(int _groupID) override;
     std::string getPbftView(int _groupID) override;
     Json::Value getSealerList(int _groupID) override;
-    Json::Value getEpochSealersList(int _groupID) override;
     Json::Value getObserverList(int _groupID) override;
     Json::Value getConsensusStatus(int _groupID) override;
 
@@ -208,8 +207,6 @@ protected:
 
     const std::set<std::string> c_supportedSystemConfigKeys = {
         dev::precompiled::SYSTEM_KEY_TX_COUNT_LIMIT, dev::precompiled::SYSTEM_KEY_TX_GAS_LIMIT,
-        dev::precompiled::SYSTEM_KEY_RPBFT_EPOCH_BLOCK_NUM,
-        dev::precompiled::SYSTEM_KEY_RPBFT_EPOCH_SEALER_NUM,
         dev::precompiled::SYSTEM_KEY_CONSENSUS_TIMEOUT};
 
 private:

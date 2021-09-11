@@ -485,52 +485,11 @@ std::shared_ptr<Block> BlockChainImp::getBlockByHash(h256 const& _blockHash, int
     }
 }
 
-void BlockChainImp::initGenesisWorkingSealers(dev::storage::Table::Ptr _consTable,
-    std::shared_ptr<dev::ledger::LedgerParamInterface> _initParam)
-{
-    // only used for vrf based rPBFT
-    auto sealerList = _initParam->mutableConsensusParam().sealerList;
-    bool rPBFTEnabled = (dev::stringCmpIgnoreCase(_initParam->mutableConsensusParam().consensusType,
-                             RPBFT_CONSENSUS_TYPE) == 0);
-    if (!rPBFTEnabled || g_BCOSConfig.version() < V2_6_0)
-    {
-        return;
-    }
-
-    std::sort(sealerList.begin(), sealerList.end());
-
-    int64_t sealersSize = sealerList.size();
-    auto selectedNum = std::min(_initParam->mutableConsensusParam().epochSealerNum, sealersSize);
-
-    // shuffle the sealerList according to the genesis hash
-    // select the genesis working sealers randomly according to genesis hash
-    if (sealersSize > selectedNum)
-    {
-        for (ssize_t i = sealersSize - 1; i > 0; i--)
-        {
-            int64_t selectedNode = (int64_t)(u256(crypto::Hash(sealerList[i])) % (i + 1));
-            std::swap(sealerList[i], sealerList[selectedNode]);
-        }
-    }
-    // output workingSealers
-    std::string workingSealers;
-    for (int64_t i = 0; i < selectedNum; i++)
-    {
-        workingSealers += (sealerList[i]).abridged() + ",";
-    }
-    BLOCKCHAIN_LOG(INFO) << LOG_DESC("initGenesisWorkingSealers")
-                         << LOG_KV("workingSealerNum", selectedNum)
-                         << LOG_KV("workingSealers", workingSealers);
-    // update selected sealers into workingSealers
-    initGensisConsensusInfoByNodeType(
-        _consTable, NODE_TYPE_WORKING_SEALER, sealerList, selectedNum, true);
-}
-
 // Configuration item written to the genesis block:
 // groupMark:
 //          groupId, sealerList, observerList, consensusType,
 //          storageType, stateType, evmFlags, tx_count_limit
-//          tx_gas_limit, epochSealerNum(for rPBFT), epochBlockNum(for rPBFT)
+//          tx_gas_limit
 bool BlockChainImp::checkAndBuildGenesisBlock(
     std::shared_ptr<dev::ledger::LedgerParamInterface> _initParam, bool _shouldBuild)
 {
@@ -571,25 +530,6 @@ bool BlockChainImp::checkAndBuildGenesisBlock(
             // init for tx_gas_limit
             initSystemConfig(tb, SYSTEM_KEY_TX_GAS_LIMIT,
                 boost::lexical_cast<std::string>(_initParam->mutableTxParam().txGasLimit));
-            // init configurations for RPBFT
-            auto consensusType = _initParam->mutableConsensusParam().consensusType;
-            if (dev::stringCmpIgnoreCase(consensusType, RPBFT_CONSENSUS_TYPE) == 0)
-            {
-                // init epoch_sealer_num
-                initSystemConfig(tb, SYSTEM_KEY_RPBFT_EPOCH_SEALER_NUM,
-                    boost::lexical_cast<std::string>(
-                        _initParam->mutableConsensusParam().epochSealerNum));
-                // init epoch_block_num
-                initSystemConfig(tb, SYSTEM_KEY_RPBFT_EPOCH_BLOCK_NUM,
-                    boost::lexical_cast<std::string>(
-                        _initParam->mutableConsensusParam().epochBlockNum));
-                initSystemConfig(tb, INTERNAL_SYSTEM_KEY_NOTIFY_ROTATE, "0");
-                BLOCKCHAIN_LOG(INFO) << LOG_DESC("set configuration for rPBFT")
-                                     << LOG_KV(SYSTEM_KEY_RPBFT_EPOCH_SEALER_NUM,
-                                            _initParam->mutableConsensusParam().epochSealerNum)
-                                     << LOG_KV(SYSTEM_KEY_RPBFT_EPOCH_BLOCK_NUM,
-                                            _initParam->mutableConsensusParam().epochBlockNum);
-            }
             if (g_BCOSConfig.version() >= V2_6_0)
             {
                 // init consensus time
@@ -609,7 +549,6 @@ bool BlockChainImp::checkAndBuildGenesisBlock(
                 tb, NODE_TYPE_SEALER, _initParam->mutableConsensusParam().sealerList);
             initGensisConsensusInfoByNodeType(
                 tb, NODE_TYPE_OBSERVER, _initParam->mutableConsensusParam().observerList);
-            initGenesisWorkingSealers(tb, _initParam);
         }
 
         tb = mtb->openTable(SYS_HASH_2_BLOCK, false);

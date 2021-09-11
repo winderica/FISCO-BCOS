@@ -232,10 +232,6 @@ const char* const SYSTEM_KEY_TX_COUNT_LIMIT = "tx_count_limit";
 const char* const SYSTEM_INIT_VALUE_TX_COUNT_LIMIT = "1000";
 const char* const SYSTEM_KEY_TX_GAS_LIMIT = "tx_gas_limit";
 
-// system configuration for RPBFT
-const char* const SYSTEM_KEY_RPBFT_EPOCH_SEALER_NUM = "rpbft_epoch_sealer_num";
-const char* const SYSTEM_KEY_RPBFT_EPOCH_BLOCK_NUM = "rpbft_epoch_block_num";
-
 // system configuration for consensus-time
 const char* const SYSTEM_KEY_CONSENSUS_TIMEOUT = "consensus_timeout";
 
@@ -246,8 +242,6 @@ const char* const SYSTEM_INIT_VALUE_TX_GAS_LIMIT = "300000000";
 const int TX_COUNT_LIMIT_MIN = 1;
 const int TX_GAS_LIMIT_MIN = 100000;
 
-const int RPBFT_EPOCH_SEALER_NUM_MIN = 1;
-const int RPBFT_EPOCH_BLOCK_NUM_MIN = 1;
 const unsigned SYSTEM_CONSENSUS_TIMEOUT_MIN = 3;
 const unsigned SYSTEM_CONSENSUS_TIMEOUT_MAX = (UINT_MAX / 1000);
 }  // namespace precompiled

@@ -169,11 +169,6 @@ public:
 private:
     std::shared_ptr<BlockHeaderInfo> getBlockHeaderFromBlock(dev::eth::Block::Ptr _block);
 
-    // Randomly select epochSealerSize nodes from workingList as workingSealer and write them into
-    // the system table Only used in vrf rpbft consensus type
-    virtual void initGenesisWorkingSealers(dev::storage::Table::Ptr _consTable,
-        std::shared_ptr<dev::ledger::LedgerParamInterface> _initParam);
-
     virtual void initGensisConsensusInfoByNodeType(dev::storage::Table::Ptr _consTable,
         std::string const& _nodeType, dev::h512s const& _nodeList, int64_t _nodeNum = -1,
         bool _update = false);

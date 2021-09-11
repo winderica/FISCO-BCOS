@@ -144,22 +144,6 @@ bool SystemConfigPrecompiled::checkValueValid(std::string const& key, std::strin
     {
         return (configuredValue >= TX_GAS_LIMIT_MIN);
     }
-    else if (SYSTEM_KEY_RPBFT_EPOCH_SEALER_NUM == key)
-    {
-        return (configuredValue >= RPBFT_EPOCH_SEALER_NUM_MIN);
-    }
-    else if (SYSTEM_KEY_RPBFT_EPOCH_BLOCK_NUM == key)
-    {
-        if (g_BCOSConfig.version() < V2_6_0)
-        {
-            return (configuredValue >= RPBFT_EPOCH_BLOCK_NUM_MIN);
-        }
-        else
-        {
-            // epoch_block_num is at least 2 when supported_version >= v2.6.0
-            return (configuredValue > RPBFT_EPOCH_BLOCK_NUM_MIN);
-        }
-    }
     else if (SYSTEM_KEY_CONSENSUS_TIMEOUT == key)
     {
         if (g_BCOSConfig.version() < V2_6_0)
@@ -169,7 +153,6 @@ bool SystemConfigPrecompiled::checkValueValid(std::string const& key, std::strin
         return (configuredValue >= SYSTEM_CONSENSUS_TIMEOUT_MIN &&
                 configuredValue < SYSTEM_CONSENSUS_TIMEOUT_MAX);
     }
-    // only can insert tx_count_limit and tx_gas_limit, rpbft_epoch_sealer_num,
-    // rpbft_epoch_block_num as system config
+    // only can insert tx_count_limit and tx_gas_limit as system config
     return false;
 }

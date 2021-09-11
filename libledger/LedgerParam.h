@@ -58,11 +58,6 @@ struct ConsensusParam
     // default consensus timeout time is 3s
     int64_t consensusTimeout = 3;
     int64_t maxTransactions;
-    // rPBFT related
-    // sealers size for each RPBFT epoch, default is 10
-    int64_t epochSealerNum = 10;
-    // block num for each epoch, default is 10
-    int64_t epochBlockNum = 10;
 
     // consensus related Non-genesis param
     int8_t maxTTL;
@@ -223,7 +218,6 @@ private:
     void initTxExecuteConfig(boost::property_tree::ptree const& pt);
     void initConsensusConfig(boost::property_tree::ptree const& pt);
     void initConsensusIniConfig(boost::property_tree::ptree const& pt);
-    void initRPBFTConsensusIniConfig(boost::property_tree::ptree const& pt);
     void initSyncConfig(boost::property_tree::ptree const& pt);
     void initEventLogFilterManagerConfig(boost::property_tree::ptree const& pt);
     void initFlowControlConfig(boost::property_tree::ptree const& _pt);

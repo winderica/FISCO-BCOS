@@ -119,15 +119,6 @@ void LedgerParam::generateGenesisMark()
     s << mutableConsensusParam().maxTransactions << "-";
     s << mutableTxParam().txGasLimit;
 
-    // init epochSealerNum and epochBlockNum for rPBFT
-    if (dev::stringCmpIgnoreCase(mutableConsensusParam().consensusType, RPBFT_CONSENSUS_TYPE) == 0)
-    {
-        LedgerParam_LOG(INFO) << LOG_DESC("store rPBFT related configuration")
-                              << LOG_KV("epochSealerNum", mutableConsensusParam().epochSealerNum)
-                              << LOG_KV("epochBlockNum", mutableConsensusParam().epochBlockNum);
-        s << "-" << mutableConsensusParam().epochSealerNum << "-";
-        s << mutableConsensusParam().epochBlockNum;
-    }
     // only the supported_version is greater than or equal to v2.6.0,
     // the consensus time runtime setting is enabled
     if (g_BCOSConfig.version() >= V2_6_0)
@@ -247,51 +238,6 @@ void LedgerParam::initTxPoolConfig(ptree const& pt)
     }
 }
 
-void LedgerParam::initRPBFTConsensusIniConfig(boost::property_tree::ptree const& pt)
-{
-    mutableConsensusParam().broadcastPrepareByTree =
-        pt.get<bool>("consensus.broadcast_prepare_by_tree", true);
-
-    mutableConsensusParam().prepareStatusBroadcastPercent =
-        pt.get<signed>("consensus.prepare_status_broadcast_percent", 33);
-    if (mutableConsensusParam().prepareStatusBroadcastPercent < 25 ||
-        mutableConsensusParam().prepareStatusBroadcastPercent > 100)
-    {
-        BOOST_THROW_EXCEPTION(
-            InvalidConfiguration() << errinfo_comment(
-                "consensus.prepare_status_broadcast_percent must be between 25 and 100"));
-    }
-    // maxRequestMissedTxsWaitTime
-    mutableConsensusParam().maxRequestMissedTxsWaitTime =
-        pt.get<int64_t>("consensus.max_request_missedTxs_waitTime", 100);
-    if (mutableConsensusParam().maxRequestMissedTxsWaitTime < 5 ||
-        mutableConsensusParam().maxRequestMissedTxsWaitTime > 1000)
-    {
-        BOOST_THROW_EXCEPTION(
-            InvalidConfiguration()
-            << errinfo_comment("consensus.max_request_missedTxs_waitTime must between 5 and 1000"));
-    }
-    // maxRequestPrepareWaitTime;
-    mutableConsensusParam().maxRequestPrepareWaitTime =
-        pt.get<int64_t>("consensus.max_request_prepare_waitTime", 100);
-    if (mutableConsensusParam().maxRequestPrepareWaitTime < 10 ||
-        mutableConsensusParam().maxRequestPrepareWaitTime > 1000)
-    {
-        BOOST_THROW_EXCEPTION(
-            InvalidConfiguration()
-            << errinfo_comment("consensus.max_request_prepare_waitTime must between 10 and 1000"));
-    }
-    LedgerParam_LOG(INFO) << LOG_BADGE("initRPBFTConsensusIniConfig")
-                          << LOG_KV("broadcastPrepareByTree",
-                                 mutableConsensusParam().broadcastPrepareByTree)
-                          << LOG_KV("prepareStatusBroadcastPercent",
-                                 mutableConsensusParam().prepareStatusBroadcastPercent)
-                          << LOG_KV("maxRequestMissedTxsWaitTime",
-                                 mutableConsensusParam().maxRequestMissedTxsWaitTime)
-                          << LOG_KV("maxRequestPrepareWaitTime",
-                                 mutableConsensusParam().maxRequestPrepareWaitTime);
-}
-
 void LedgerParam::initConsensusIniConfig(ptree const& pt)
 {
     mutableConsensusParam().maxTTL = pt.get<int8_t>("consensus.ttl", consensus::MAXTTL);
@@ -362,8 +308,7 @@ void LedgerParam::initConsensusIniConfig(ptree const& pt)
         << LOG_KV("blockSizeIncreaseRatio", mutableConsensusParam().blockSizeIncreaseRatio)
         << LOG_KV("enableTTLOptimize", mutableConsensusParam().enableTTLOptimize)
         << LOG_KV("enablePrepareWithTxsHash", mutableConsensusParam().enablePrepareWithTxsHash);
-    // init rpbft related configurations
-    initRPBFTConsensusIniConfig(pt);
+
 }
 
 
@@ -433,39 +378,6 @@ void LedgerParam::initConsensusConfig(ptree const& pt)
         nodeListMark << toHex(node) << ",";
     }
     mutableGenesisParam().nodeListMark = nodeListMark.str();
-
-    // init configurations for rPBFT
-    mutableConsensusParam().epochSealerNum =
-        pt.get<int64_t>("consensus.epoch_sealer_num", mutableConsensusParam().sealerList.size());
-    if (mutableConsensusParam().epochSealerNum <= 0)
-    {
-        BOOST_THROW_EXCEPTION(InvalidConfiguration() << errinfo_comment(
-                                  "Please set consensus.epoch_sealer_num to be larger than 0!"));
-    }
-
-    mutableConsensusParam().epochBlockNum = pt.get<int64_t>("consensus.epoch_block_num", 1000);
-    if (g_BCOSConfig.version() < V2_6_0)
-    {
-        if (mutableConsensusParam().epochBlockNum <= 0)
-        {
-            BOOST_THROW_EXCEPTION(ForbidNegativeValue() << errinfo_comment(
-                                      "Please set consensus.epoch_block_num to positive !"));
-        }
-    }
-    else
-    {
-        // epoch_block_num is at least 2 when supported_version >= v2.6.0
-        if (mutableConsensusParam().epochBlockNum <= dev::precompiled::RPBFT_EPOCH_BLOCK_NUM_MIN)
-        {
-            BOOST_THROW_EXCEPTION(
-                InvalidConfiguration() << errinfo_comment(
-                    "Please set consensus.epoch_block_num to be larger than " +
-                    std::to_string(dev::precompiled::RPBFT_EPOCH_BLOCK_NUM_MIN) + "!"));
-        }
-    }
-    LedgerParam_LOG(DEBUG) << LOG_BADGE("initConsensusConfig")
-                           << LOG_KV("epochSealerNum", mutableConsensusParam().epochSealerNum)
-                           << LOG_KV("epochBlockNum", mutableConsensusParam().epochBlockNum);
 }
 
 void LedgerParam::initSyncConfig(ptree const& pt)

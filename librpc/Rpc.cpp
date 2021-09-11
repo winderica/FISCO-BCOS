@@ -198,8 +198,7 @@ std::string Rpc::getPbftView(int _groupID)
         auto ledgerParam = ledgerManager()->getParamByGroupId(_groupID);
         auto consensusParam = ledgerParam->mutableConsensusParam();
         std::string consensusType = consensusParam.consensusType;
-        if (stringCmpIgnoreCase(consensusType, PBFT_CONSENSUS_TYPE) != 0 &&
-            stringCmpIgnoreCase(consensusType, RPBFT_CONSENSUS_TYPE) != 0)
+        if (stringCmpIgnoreCase(consensusType, PBFT_CONSENSUS_TYPE) != 0)
         {
             BOOST_THROW_EXCEPTION(
                 JsonRpcException(RPCExceptionType::NoView, RPCMsg[RPCExceptionType::NoView]));
@@ -242,53 +241,6 @@ Json::Value Rpc::getSealerList(int _groupID)
             response.append((*it).hex());
         }
 
-        return response;
-    }
-    catch (JsonRpcException& e)
-    {
-        throw e;
-    }
-    catch (std::exception& e)
-    {
-        BOOST_THROW_EXCEPTION(
-            JsonRpcException(Errors::ERROR_RPC_INTERNAL_ERROR, boost::diagnostic_information(e)));
-    }
-}
-
-Json::Value Rpc::getEpochSealersList(int _groupID)
-{
-    try
-    {
-        auto ledgerParam = ledgerManager()->getParamByGroupId(_groupID);
-        checkLedgerStatus(ledgerParam, "ledgerParam", "getEpochSealersList");
-        checkRequest(_groupID);
-
-        auto consensusType = ledgerParam->mutableConsensusParam().consensusType;
-        if (stringCmpIgnoreCase(consensusType, RPBFT_CONSENSUS_TYPE) != 0)
-        {
-            RPC_LOG(ERROR) << LOG_DESC("Only support getEpochSealersList when rpbft is used")
-                           << LOG_KV("consensusType", consensusType) << LOG_KV("groupID", _groupID);
-
-            BOOST_THROW_EXCEPTION(JsonRpcException(RPCExceptionType::InvalidRequest,
-                "method getEpochSealersList only supported when rpbft is used, current "
-                "consensus "
-                "type is " +
-                    consensusType));
-        }
-        RPC_LOG(INFO) << LOG_BADGE("getEpochSealersList") << LOG_DESC("request")
-                      << LOG_KV("groupID", _groupID);
-
-        auto consensus = ledgerManager()->consensus(_groupID);
-        checkLedgerStatus(consensus, "consensus", "getEpochSealersList");
-        checkRequest(_groupID);
-
-        // get the chosed sealer list
-        auto sealers = consensus->consensusList();
-        Json::Value response = Json::Value(Json::arrayValue);
-        for (auto it = sealers.begin(); it != sealers.end(); ++it)
-        {
-            response.append((*it).hex());
-        }
         return response;
     }
     catch (JsonRpcException& e)

@@ -29,9 +29,6 @@
 #include <libconsensus/pbft/PBFTSealer.h>
 #include <libconsensus/raft/RaftEngine.h>
 #include <libconsensus/raft/RaftSealer.h>
-#include <libconsensus/rotating_pbft/RotatingPBFTEngine.h>
-#include <libconsensus/rotating_pbft/vrf_rpbft/VRFBasedrPBFTEngine.h>
-#include <libconsensus/rotating_pbft/vrf_rpbft/VRFBasedrPBFTSealer.h>
 #include <libflowlimit/RateLimiter.h>
 #include <libnetwork/PeerWhitelist.h>
 #include <libsync/SyncMaster.h>
@@ -331,30 +328,6 @@ ConsensusInterface::Ptr Ledger::createConsensusEngine(dev::PROTOCOL_ID const& _p
         return std::make_shared<PBFTEngine>(m_service, m_txPool, m_blockChain, m_sync,
             m_blockVerifier, _protocolId, m_keyPair, m_param->mutableConsensusParam().sealerList);
     }
-    if (normalrPBFTEnabled())
-    {
-        Ledger_LOG(INFO) << LOG_DESC("createConsensusEngine: create RotatingPBFTEngine");
-        return std::make_shared<RotatingPBFTEngine>(m_service, m_txPool, m_blockChain, m_sync,
-            m_blockVerifier, _protocolId, m_keyPair, m_param->mutableConsensusParam().sealerList);
-    }
-    if (vrfBasedrPBFTEnabled())
-    {
-        // Note: since WorkingSealerManagerPrecompiled is enabled after v2.6.0,
-        //       vrf based rpbft is supported after v2.6.0
-        if (g_BCOSConfig.version() >= V2_6_0)
-        {
-            Ledger_LOG(INFO) << LOG_DESC("createConsensusEngine: create VRFBasedrPBFTEngine");
-            return std::make_shared<VRFBasedrPBFTEngine>(m_service, m_txPool, m_blockChain, m_sync,
-                m_blockVerifier, _protocolId, m_keyPair,
-                m_param->mutableConsensusParam().sealerList);
-        }
-        else
-        {
-            BOOST_THROW_EXCEPTION(dev::InitLedgerConfigFailed() << errinfo_comment(
-                                      m_param->mutableConsensusParam().consensusType +
-                                      " is supported after when supported_version >= v2.6.0!"));
-        }
-    }
     return nullptr;
 }
 
@@ -377,18 +350,10 @@ std::shared_ptr<Sealer> Ledger::createPBFTSealer()
     Ledger_LOG(INFO) << LOG_BADGE("initLedger") << LOG_BADGE("createPBFTSealer")
                      << LOG_KV("baseDir", m_param->baseDir()) << LOG_KV("Protocol", protocol_id);
     std::shared_ptr<PBFTSealer> pbftSealer;
-    if (vrfBasedrPBFTEnabled())
-    {
-        pbftSealer = std::make_shared<VRFBasedrPBFTSealer>(m_txPool, m_blockChain, m_sync);
-        Ledger_LOG(INFO) << LOG_BADGE("initLedger")
-                         << LOG_DESC("createPBFTSealer for VRF-based rPBFT")
-                         << LOG_KV("consensusType", m_param->mutableConsensusParam().consensusType);
-    }
-    else
     {
         pbftSealer = std::make_shared<PBFTSealer>(m_txPool, m_blockChain, m_sync);
         Ledger_LOG(INFO) << LOG_BADGE("initLedger")
-                         << LOG_DESC("createPBFTSealer for PBFT or rPBFT")
+                         << LOG_DESC("createPBFTSealer for PBFT")
                          << LOG_KV("consensusType", m_param->mutableConsensusParam().consensusType);
     }
 
@@ -412,7 +377,6 @@ std::shared_ptr<Sealer> Ledger::createPBFTSealer()
     pbftSealer->setEnableDynamicBlockSize(m_param->mutableConsensusParam().enableDynamicBlockSize);
     pbftSealer->setBlockSizeIncreaseRatio(m_param->mutableConsensusParam().blockSizeIncreaseRatio);
     initPBFTEngine(pbftSealer);
-    initrPBFTEngine(pbftSealer);
     return pbftSealer;
 }
 
@@ -422,10 +386,9 @@ dev::eth::BlockFactory::Ptr Ledger::createBlockFactory()
     {
         return std::make_shared<dev::eth::BlockFactory>();
     }
-    // only create PartiallyBlockFactory when using pbft or rpbft
+    // only create PartiallyBlockFactory when using pbft
     if (dev::stringCmpIgnoreCase(
-            m_param->mutableConsensusParam().consensusType, PBFT_CONSENSUS_TYPE) == 0 ||
-        normalrPBFTEnabled() || vrfBasedrPBFTEnabled())
+            m_param->mutableConsensusParam().consensusType, PBFT_CONSENSUS_TYPE) == 0)
     {
         return std::make_shared<dev::eth::PartiallyBlockFactory>();
     }
@@ -447,29 +410,6 @@ void Ledger::initPBFTEngine(Sealer::Ptr _sealer)
     pbftEngine->setEnableTTLOptimize(m_param->mutableConsensusParam().enableTTLOptimize);
     pbftEngine->setEnablePrepareWithTxsHash(
         m_param->mutableConsensusParam().enablePrepareWithTxsHash);
-}
-
-// init rotating-pbft engine
-void Ledger::initrPBFTEngine(dev::consensus::Sealer::Ptr _sealer)
-{
-    if (!normalrPBFTEnabled() && !vrfBasedrPBFTEnabled())
-    {
-        return;
-    }
-    RotatingPBFTEngine::Ptr rotatingPBFT =
-        std::dynamic_pointer_cast<RotatingPBFTEngine>(_sealer->consensusEngine());
-    rotatingPBFT->setMaxRequestMissedTxsWaitTime(
-        m_param->mutableConsensusParam().maxRequestMissedTxsWaitTime);
-    rotatingPBFT->setMaxRequestPrepareWaitTime(
-        m_param->mutableConsensusParam().maxRequestPrepareWaitTime);
-    if (m_param->mutableConsensusParam().broadcastPrepareByTree)
-    {
-        rotatingPBFT->createTreeTopology(m_param->mutableConsensusParam().treeWidth);
-        rotatingPBFT->setPrepareStatusBroadcastPercent(
-            m_param->mutableConsensusParam().prepareStatusBroadcastPercent);
-        Ledger_LOG(INFO) << LOG_DESC("createTreeTopology")
-                         << LOG_KV("treeWidth", m_param->mutableConsensusParam().treeWidth);
-    }
 }
 
 std::shared_ptr<Sealer> Ledger::createRaftSealer()
@@ -505,8 +445,7 @@ bool Ledger::consensusInitFactory()
     }
     // create PBFTSealer
     else if (dev::stringCmpIgnoreCase(
-                 m_param->mutableConsensusParam().consensusType, PBFT_CONSENSUS_TYPE) == 0 ||
-             normalrPBFTEnabled() || vrfBasedrPBFTEnabled())
+                 m_param->mutableConsensusParam().consensusType, PBFT_CONSENSUS_TYPE) == 0)
     {
         m_sealer = createPBFTSealer();
     }
@@ -516,7 +455,7 @@ bool Ledger::consensusInitFactory()
             dev::InitLedgerConfigFailed()
             << errinfo_comment("create consensusEngine failed, maybe unsupported consensus type " +
                                m_param->mutableConsensusParam().consensusType +
-                               ", supported consensus type are pbft, raft, rpbft"));
+                               ", supported consensus type are pbft, raft"));
     }
     if (!m_sealer)
     {
