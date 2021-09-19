@@ -6,8 +6,13 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            deps
+          key: deps
       - run: sudo apt update
-      - run: sudo apt install -y cmake ccache librocksdb-dev libmicrohttpd-dev libleveldb-dev libsnappy-dev libzdb-dev
+      - run: sudo apt install -y cmake ccache
       - uses: hendrikmuhs/ccache-action@v1
       - run: export PATH="/usr/lib/ccache:$PATH"
       - run: cmake .
