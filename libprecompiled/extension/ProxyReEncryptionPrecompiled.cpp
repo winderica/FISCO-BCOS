@@ -13,12 +13,12 @@ using namespace mcl::bn;
 /*
 contract PRE {
     function generatorGen(string g, string h) public constant returns(string, string);
-    function reEncrypt(string ca0, string ca1, string rk) public constant returns(string, string);
+    function reEncrypt(string ca1, string rk) public constant returns(string);
 }
 */
 
 const char* const PRE_GENERATOR_GEN = "generatorGen(string,string)";
-const char* const PRE_REENCRYPT = "reEncrypt(string,string,string)";
+const char* const PRE_REENCRYPT = "reEncrypt(string,string)";
 
 ProxyReEncryptionPrecompiled::ProxyReEncryptionPrecompiled()
 {
@@ -48,15 +48,15 @@ PrecompiledExecResult::Ptr ProxyReEncryptionPrecompiled::call(ExecutiveContext::
     }
     else if (func == name2Selector[PRE_REENCRYPT])
     {
-        std::string ca0, ca1, rk;
-        abi.abiOut(data, ca0, ca1, rk);
+        std::string ca1, rk;
+        abi.abiOut(data, ca1, rk);
         G1 P;
         G2 Q;
         P.deserializeHexStr(ca1);
         Q.deserializeHexStr(rk);
         Fp12 cb1;
         pairing(cb1, P, Q);
-        callResult->setExecResult(abi.abiIn("", ca0, cb1.serializeToHexStr()));
+        callResult->setExecResult(abi.abiIn("", cb1.serializeToHexStr()));
     }
     else
     {

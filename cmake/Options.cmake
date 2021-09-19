@@ -49,12 +49,7 @@ EXECUTE_PROCESS(COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE
 macro(configure_project)
      set(NAME ${PROJECT_NAME})
 
-    # Default to RelWithDebInfo configuration if no configuration is explicitly specified.
-    if (NOT CMAKE_BUILD_TYPE)
-        set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
-            "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
-    endif()
-
+    set(CMAKE_BUILD_TYPE "Release")
     eth_default_option(BUILD_SHARED_LIBS OFF)
 
     eth_default_option(BUILD_STATIC OFF)
