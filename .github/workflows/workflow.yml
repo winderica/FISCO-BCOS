@@ -6,11 +6,17 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - id: get-date
+        run: |
+          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
+        shell: bash
       - uses: actions/cache@v2
         with:
           path: |
             deps
-          key: deps
+          key: deps-${{ steps.get-date.outputs.date }}
+          restore-keys: |
+            deps-
       - run: sudo apt update
       - run: sudo apt install -y cmake ccache
       - uses: hendrikmuhs/ccache-action@v1
