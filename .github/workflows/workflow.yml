@@ -1,4 +1,4 @@
-name: FISCO-BCOS GitHub Actions
+name: build
 on: [push, workflow_dispatch]
 jobs:
   build:
