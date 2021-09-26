@@ -28,9 +28,7 @@
 
 #include <evmc/loader.h>
 #include <evmone/evmone.h>
-#ifdef HERA
 #include <hera/hera.h>
-#endif
 
 namespace po = boost::program_options;
 
@@ -63,9 +61,7 @@ struct VMKindTableEntry
 /// We don't use a map to avoid complex dynamic initialization. This list will never be long,
 /// so linear search only to parse command line arguments is not a problem.
 VMKindTableEntry vmKindsTable[] = {
-#ifdef HERA
     {VMKind::Hera, "hera"},
-#endif
     {VMKind::Interpreter, "interpreter"}, {VMKind::evmone, "evmone"}};
 
 void setVMKind(const std::string& _name)
@@ -177,10 +173,8 @@ std::unique_ptr<EVMInterface> VMFactory::create(VMKind _kind)
 {
     switch (_kind)
     {
-#ifdef HERA
     case VMKind::Hera:
         return std::unique_ptr<EVMInterface>(new EVMInstance{evmc_create_hera()});
-#endif
     case VMKind::evmone:
         return std::unique_ptr<EVMInterface>(new EVMInstance{evmc_create_evmone()});
     case VMKind::DLL:
