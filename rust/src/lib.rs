@@ -13,34 +13,27 @@ use winterfell::{
 use std::slice;
 extern crate base64;
 
-const LENGTH: usize = 1024;
-
 #[no_mangle]
-pub extern fn hash(value_ptr: *const u8, seed_ptr: *const u8) -> *mut u8 {
-    let value_raw = unsafe { slice::from_raw_parts(value_ptr as *const u128, 2) };
-    let seed_raw = unsafe { slice::from_raw_parts(seed_ptr as *const u128, 2) };
-    let mut values = [seed_raw[0], seed_raw[1], value_raw[0], value_raw[1]].map(BaseElement::from);
-    let mut result = [BaseElement::ZERO; 4];
-    for _ in 0..LENGTH {
-        rescue::hash(values, &mut result);
-        values.copy_from_slice(&result);
-    }
+pub extern fn hash(prev_digest_ptr: *const u8, r_ptr: *const u8) -> *mut u8 {
+    let prev_digest_raw = unsafe { slice::from_raw_parts(prev_digest_ptr as *const u128, 2) };
+    let r_raw = unsafe { slice::from_raw_parts(r_ptr as *const u128, 2) };
+    let mut result = [prev_digest_raw[0], prev_digest_raw[1], r_raw[0], r_raw[1]].map(BaseElement::from);
+    rescue::hash(&mut result);
     Box::into_raw(Box::new(result)) as *mut _
 }
 
 #[no_mangle]
-pub extern fn prove(value_ptr: *const u8, seed_ptr: *const u8, result_ptr: *const u8) -> *mut c_char {
-    let value_raw = unsafe { slice::from_raw_parts(value_ptr as *const u128, 2) };
-    let seed_raw = unsafe { slice::from_raw_parts(seed_ptr as *const u128, 2) };
+pub extern fn prove(r0_ptr: *const u8, r1_ptr: *const u8, result_ptr: *const u8) -> *mut c_char {
+    let r0_raw = unsafe { slice::from_raw_parts(r0_ptr as *const u128, 2) };
+    let r1_raw = unsafe { slice::from_raw_parts(r1_ptr as *const u128, 2) };
     let result_raw = unsafe { slice::from_raw_parts(result_ptr as *const u128, 2) };
-    let value = [BaseElement::from(value_raw[0]), BaseElement::from(value_raw[1])];
-    let seed = [BaseElement::from(seed_raw[0]), BaseElement::from(seed_raw[1])];
+    let r0 = [BaseElement::from(r0_raw[0]), BaseElement::from(r0_raw[1])];
+    let r1 = [BaseElement::from(r1_raw[0]), BaseElement::from(r1_raw[1])];
     let result = [BaseElement::from(result_raw[0]), BaseElement::from(result_raw[1])];
-    let trace = build_trace(value, seed, LENGTH);
+    let trace = build_trace(r0, r1);
 
-    // generate the proof
     let pub_inputs = PublicInputs {
-        seed,
+        r1,
         result,
     };
     let options = ProofOptions::new(
@@ -56,15 +49,15 @@ pub extern fn prove(value_ptr: *const u8, seed_ptr: *const u8, result_ptr: *cons
 }
 
 #[no_mangle]
-pub extern fn verify(seed_ptr: *const u8, result_ptr: *const u8, proof_ptr: *const c_char) -> bool {
-    let seed_raw = unsafe { slice::from_raw_parts(seed_ptr as *const u128, 2) };
+pub extern fn verify(r1_ptr: *const u8, result_ptr: *const u8, proof_ptr: *const c_char) -> bool {
+    let r1_raw = unsafe { slice::from_raw_parts(r1_ptr as *const u128, 2) };
     let result_raw = unsafe { slice::from_raw_parts(result_ptr as *const u128, 2) };
     let proof_raw = unsafe { CStr::from_ptr(proof_ptr) };
-    let seed = [BaseElement::from(seed_raw[0]), BaseElement::from(seed_raw[1])];
+    let r1 = [BaseElement::from(r1_raw[0]), BaseElement::from(r1_raw[1])];
     let result = [BaseElement::from(result_raw[0]), BaseElement::from(result_raw[1])];
     let proof = base64::decode(proof_raw.to_bytes()).unwrap();
     let pub_inputs = PublicInputs {
-        seed,
+        r1,
         result,
     };
     match winterfell::verify::<RescueAir>(StarkProof::from_bytes(&proof).unwrap(), pub_inputs) {
@@ -72,4 +65,3 @@ pub extern fn verify(seed_ptr: *const u8, result_ptr: *const u8, proof_ptr: *con
         Err(_) => false,
     }
 }
-

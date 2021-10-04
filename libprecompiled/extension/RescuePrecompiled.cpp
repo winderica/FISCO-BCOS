@@ -8,20 +8,16 @@ using namespace dev;
 using namespace dev::blockverifier;
 using namespace dev::precompiled;
 
-extern "C" uint8_t *hash(void *value, void* seed);
-extern "C" char *prove(void *value, void* seed, void *result);
-extern "C" bool verify(void* seed, void *result, void *proof);
+extern "C" uint8_t *hash(void *prev_digest, void* r);
+extern "C" char *prove(void *r0, void *r1, void *digest);
+extern "C" bool verify(void* r1, void *digest, void *proof);
 
-/*
-contract Rescue {
-    function verify(string seed, string result, string proof) public constant returns(bool);
-}
-*/
-
+const char* const RESCUE_HASH = "hash(string,string)";
 const char* const RESCUE_VERIFY = "verify(string,string,string)";
 
 RescuePrecompiled::RescuePrecompiled()
 {
+    name2Selector[RESCUE_HASH] = getFuncSelector(RESCUE_HASH);
     name2Selector[RESCUE_VERIFY] = getFuncSelector(RESCUE_VERIFY);
 }
 
@@ -36,13 +32,26 @@ PrecompiledExecResult::Ptr RescuePrecompiled::call(ExecutiveContext::Ptr, bytesC
 
     if (func == name2Selector[RESCUE_VERIFY])
     {
-        std::string seed_hex, result_hex, proof;
-        abi.abiOut(data, seed_hex, result_hex, proof);
-	std::vector<uint8_t> seed;
-	std::vector<uint8_t> result;
-	boost::algorithm::unhex(seed_hex, std::back_inserter(seed));
-	boost::algorithm::unhex(result_hex, std::back_inserter(result));
-        callResult->setExecResult(abi.abiIn("", verify((void *)seed.data(), (void *)result.data(), (void *)proof.data())));
+        std::string r1_hex, digest_hex, proof;
+        abi.abiOut(data, r1_hex, digest_hex, proof);
+        std::vector<uint8_t> r1;
+        std::vector<uint8_t> digest;
+        boost::algorithm::unhex(r1_hex, std::back_inserter(r1));
+        boost::algorithm::unhex(digest_hex, std::back_inserter(digest));
+        callResult->setExecResult(abi.abiIn("", verify((void *)r1.data(), (void *)digest.data(), (void *)proof.data())));
+    }
+    else if (func == name2Selector[RESCUE_HASH])
+    {
+        std::string prev_digest_hex, r_hex;
+        abi.abiOut(data, prev_digest_hex, r_hex);
+        std::vector<uint8_t> prev_digest;
+        std::vector<uint8_t> r;
+        boost::algorithm::unhex(prev_digest_hex, std::back_inserter(prev_digest));
+        boost::algorithm::unhex(r_hex, std::back_inserter(r));
+        std::string digest;
+        auto result = hash((void *)prev_digest.data(), (void *)r.data());
+        boost::algorithm::hex(result, result + 32, std::back_inserter(digest));
+        callResult->setExecResult(abi.abiIn("", digest));
     }
     else
     {

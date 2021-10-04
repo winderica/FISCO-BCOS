@@ -13,15 +13,12 @@ const CYCLE_LENGTH: usize = 16;
 
 /// Implementation of Rescue hash function with a 4 element state and 14 rounds. Accepts a
 /// 2-element input, and returns a 2-element digest.
-pub fn hash(value: [BaseElement; 4], result: &mut [BaseElement]) {
-    let mut state = BaseElement::zeroed_vector(STATE_WIDTH);
-    state.copy_from_slice(&value);
+pub fn hash(result: &mut [BaseElement]) {
     for i in 0..NUM_ROUNDS {
-        apply_round(&mut state, i);
+        apply_round(result, i);
     }
-    state[2] = BaseElement::ZERO;
-    state[3] = BaseElement::ZERO;
-    result.copy_from_slice(&state);
+    result[2] = BaseElement::ZERO;
+    result[3] = BaseElement::ZERO;
 }
 
 // TRACE
