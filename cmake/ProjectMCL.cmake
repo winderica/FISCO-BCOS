@@ -8,16 +8,14 @@ set_property(TARGET Gmp PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${GMP_INCLUDE_DIR
 
 ExternalProject_Add(mcl
     PREFIX ${CMAKE_SOURCE_DIR}/deps
-    DOWNLOAD_NAME mcl-1.52.tar.gz
-    DOWNLOAD_NO_PROGRESS 1
-    URL https://github.com/herumi/mcl/archive/refs/tags/v1.52.tar.gz
+    GIT_REPOSITORY https://github.com/herumi/bls
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
                # Build static lib but suitable to be included in a shared lib.
                -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_SHARED_LIBS}
                ${_only_release_configuration}
                	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                	-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                -DBLS_ETH
+                -DBLS_ETH=ON
     LOG_CONFIGURE 1
     LOG_BUILD 1
     BUILD_COMMAND ""
