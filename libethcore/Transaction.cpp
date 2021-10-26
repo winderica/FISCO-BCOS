@@ -47,7 +47,6 @@ void Transaction::decode(bytesConstRef tx_bytes, CheckTransaction _checkSig)
 
 void Transaction::decode(RLP const& rlp, CheckTransaction _checkSig)
 {
-    LOG(WARNING) << "CheckSig " << _checkSig << "\n";
     if (g_BCOSConfig.version() >= RC2_VERSION)
     {
         decodeRC2(rlp, _checkSig);
