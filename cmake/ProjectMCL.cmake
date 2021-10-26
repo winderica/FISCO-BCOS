@@ -16,7 +16,8 @@ ExternalProject_Add(mcl
                -DCMAKE_POSITION_INDEPENDENT_CODE=${BUILD_SHARED_LIBS}
                ${_only_release_configuration}
                	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        		-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+               	-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DBLS_ETH
     LOG_CONFIGURE 1
     LOG_BUILD 1
     BUILD_COMMAND ""
