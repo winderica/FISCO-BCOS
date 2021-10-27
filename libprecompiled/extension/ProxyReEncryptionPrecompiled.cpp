@@ -2,13 +2,16 @@
 #include <libdevcore/Common.h>
 #include <libethcore/ABI.h>
 #include <string>
-
+#define BLS_ETH
+#include <mcl/bn_c384_256.h>
 #include <mcl/bls12_381.hpp>
+#include <bls/bls.hpp>
 
 using namespace dev;
 using namespace dev::blockverifier;
 using namespace dev::precompiled;
 using namespace mcl::bn;
+using namespace bls;
 
 /*
 contract PRE {
@@ -22,7 +25,8 @@ const char* const PRE_REENCRYPT = "reEncrypt(string,string)";
 
 ProxyReEncryptionPrecompiled::ProxyReEncryptionPrecompiled()
 {
-    initPairing(mcl::BLS12_381);
+    init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
+    blsSetETHmode(BLS_ETH_MODE_LATEST);
     name2Selector[PRE_GENERATOR_GEN] = getFuncSelector(PRE_GENERATOR_GEN);
     name2Selector[PRE_REENCRYPT] = getFuncSelector(PRE_REENCRYPT);
 }
