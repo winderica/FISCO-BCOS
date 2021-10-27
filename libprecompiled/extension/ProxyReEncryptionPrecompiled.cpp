@@ -6,6 +6,7 @@
 #include <mcl/bn_c384_256.h>
 #include <mcl/bls12_381.hpp>
 #include <bls/bls.hpp>
+#include <bls/bls384_256.h>
 
 using namespace dev;
 using namespace dev::blockverifier;
