@@ -32,6 +32,6 @@
     // std::make_shared<dev::precompiled::HelloWorldPrecompiled>());
     context->setAddress2Precompiled(
         Address(dev::precompiled::DAG_TRANSFER_ADDRESS), std::make_shared<dev::precompiled::DagTransferPrecompiled>());
-    context->setAddress2Precompiled(Address(0x5007), std::make_shared<dev::precompiled::ProxyReEncryptionPrecompiled>());
+    context->setAddress2Precompiled(Address(0x5007), std::make_shared<dev::precompiled::MclPrecompiled>());
     context->setAddress2Precompiled(Address(0x5008), std::make_shared<dev::precompiled::RescuePrecompiled>());
 }
