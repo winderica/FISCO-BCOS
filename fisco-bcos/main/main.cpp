@@ -30,10 +30,17 @@
 #include <iostream>
 #include <memory>
 #include <thread>
+#define BLS_ETH
+#include <mcl/bn_c384_256.h>
+#include <mcl/bls12_381.hpp>
+#include <bls/bls.hpp>
+#include <bls/bls384_256.h>
 
 using namespace std;
 using namespace dev;
 using namespace dev::initializer;
+using namespace mcl::bn;
+using namespace bls;
 
 void checkAndCall(const std::string& configPath, shared_ptr<Initializer> initializer)
 {
@@ -57,6 +64,8 @@ void checkAndCall(const std::string& configPath, shared_ptr<Initializer> initial
 
 int main(int argc, const char* argv[])
 {
+    init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
+    blsSetETHmode(BLS_ETH_MODE_LATEST);
     /// set LC_ALL
     setDefaultOrCLocale();
     std::set_terminate([]() {

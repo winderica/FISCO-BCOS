@@ -31,8 +31,6 @@ const char* const MCL_MULTI_AGGREGATE_PK = "multiAggregatePK(string,string)";
 
 MclPrecompiled::MclPrecompiled()
 {
-    init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
-    blsSetETHmode(BLS_ETH_MODE_LATEST);
     name2Selector[MCL_PAIRING] = getFuncSelector(MCL_PAIRING);
     name2Selector[MCL_AGGREGATE] = getFuncSelector(MCL_AGGREGATE);
     name2Selector[MCL_MULTI_AGGREGATE_SIG] = getFuncSelector(MCL_MULTI_AGGREGATE_SIG);
